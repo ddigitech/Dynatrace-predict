@@ -1,3 +1,4 @@
+
 import os
 import logging
 import requests
@@ -216,8 +217,8 @@ class EnhancedDynatraceMetricsPredictor:
 
 def main():
     # Configuration
-    DYNATRACE_URL = os.getenv('DYNATRACE_URL', 'https://your-tenant.dynatrace.com')
-    API_TOKEN = os.getenv('DYNATRACE_API_TOKEN', 'your-api-token')
+    DYNATRACE_URL = os.getenv('DYNATRACE_URL', 'https://cfv77596.live.dynatrace.com')
+    API_TOKEN = os.getenv('DYNATRACE_API_TOKEN', 'dt0c01.J76V6X34XUKDKVJ2AV7MFYFB.IMUGHAX7LEVH2MAPRR43LGJZ6BWI3ALPLVRVPZYKYYB6S2Y24CIVEKW3HNWO7Z3U')
     METRIC_KEY = 'builtin:service.requestCount.total'
     
     predictor = EnhancedDynatraceMetricsPredictor(DYNATRACE_URL, API_TOKEN)
