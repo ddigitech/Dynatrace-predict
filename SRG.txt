@@ -1,4 +1,4 @@
-# Dynatrace Security Research Groups (SRGs) - Detailed Explanation
+
 
 ## What are SRGs?
 
@@ -158,5 +158,6 @@ fetch dt.security_problem
 - Effectiveness depends on instrumentation coverage
 - May require tuning to reduce false positives
 - Focuses on runtime vulnerabilities (complements but doesn't replace SAST/DAST)
+
 
 SRGs are a powerful feature for organizations looking to implement a data-driven, risk-based approach to application security management within their Dynatrace environment.
