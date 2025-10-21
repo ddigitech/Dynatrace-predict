@@ -1,6 +1,6 @@
 
 
-Here are practical DQL queries for leveraging Davis AI's security analysis capabilities:
+
 
 ## 1. Automatic Root Cause Analysis
 
@@ -255,3 +255,4 @@ Common fields available in `dt.security_problem`:
 
 
 These queries leverage Davis AI's correlation engine, impact analysis, and intelligent grouping to provide actionable security insights.
+
