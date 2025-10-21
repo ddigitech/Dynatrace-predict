@@ -1,0 +1,256 @@
+# DQL Examples for Davis AI Security Integration
+
+Here are practical DQL queries for leveraging Davis AI's security analysis capabilities:
+
+## 1. Automatic Root Cause Analysis
+
+### Query Security Problems with Root Cause Information
+```dql
+fetch dt.security_problem
+| fields timestamp, display_name, risk_score, root_cause_entity, 
+         root_cause_service, affected_entities, technology
+| filter risk_score >= 7.0
+| sort risk_score desc
+```
+
+### Identify Vulnerabilities by Root Cause Service
+```dql
+fetch dt.security_problem
+| summarize vulnerability_count = count(), 
+            avg_risk = avg(risk_score),
+            by: {root_cause_service, security_problem_type}
+| sort vulnerability_count desc
+```
+
+### Track Vulnerabilities to Specific Code Libraries
+```dql
+fetch dt.security_problem
+| filter isNotNull(vulnerable_component)
+| fields display_name, vulnerable_component, component_version, 
+         root_cause_entity, first_seen, last_updated
+| summarize count(), by: {vulnerable_component, component_version}
+```
+
+### Find Common Root Causes Across Multiple Services
+```dql
+fetch dt.security_problem
+| filter status == "OPEN"
+| summarize services_affected = countDistinct(affected_entity),
+            problems = count(),
+            by: {vulnerable_component, security_problem_type}
+| filter services_affected > 1
+| sort services_affected desc
+```
+
+## 2. Impact Assessment & Blast Radius
+
+### Calculate Security Problem Blast Radius
+```dql
+fetch dt.security_problem
+| fields display_name, risk_score, affected_entities, 
+         related_entities, exposure_level
+| expand affected_entities
+| summarize total_affected = count(),
+            max_risk = max(risk_score),
+            by: {display_name, security_problem_type}
+| sort total_affected desc
+```
+
+### Identify High-Impact Vulnerabilities in Critical Services
+```dql
+fetch dt.security_problem
+| lookup [fetch dt.entity.service
+          | filter criticality == "CRITICAL"], 
+          sourceField: affected_entity, lookupField: id
+| fields display_name, affected_entity, service_name, risk_score, 
+         reachable_data_assets, exposure_level
+| filter isNotNull(service_name)
+| sort risk_score desc
+```
+
+### Map Vulnerabilities to Downstream Dependencies
+```dql
+fetch dt.security_problem
+| fields display_name, affected_entity, risk_score
+| lookup [fetch dt.entity.service
+          | fields id, service_name, calls], 
+          sourceField: affected_entity, lookupField: id
+| expand calls
+| summarize vulnerabilities = count(),
+            highest_risk = max(risk_score),
+            by: {calls, security_problem_type}
+```
+
+### Calculate Exposure by Environment
+```dql
+fetch dt.security_problem
+| filter exposure_level in {"PUBLIC_NETWORK", "INTERNET"}
+| lookup [fetch dt.entity.service
+          | fields id, environment], 
+          sourceField: affected_entity, lookupField: id
+| summarize exposed_vulnerabilities = count(),
+            avg_risk = avg(risk_score),
+            by: {environment, security_problem_type, severity}
+| sort exposed_vulnerabilities desc
+```
+
+### Identify Vulnerabilities in Database-Connected Services
+```dql
+fetch dt.security_problem
+| filter security_problem_type in {"INJECTION", "SQL_INJECTION"}
+| lookup [fetch dt.entity.service
+          | fields id, service_name, database_connections],
+          sourceField: affected_entity, lookupField: id
+| filter isNotNull(database_connections)
+| fields display_name, service_name, risk_score, 
+         database_connections, data_assets_at_risk
+```
+
+## 3. Smart Alerting & Correlation
+
+### Group Related Vulnerabilities by Attack Pattern
+```dql
+fetch dt.security_problem
+| filter status == "OPEN"
+| summarize problem_count = count(),
+            services_affected = countDistinct(affected_entity),
+            avg_risk = avg(risk_score),
+            first_detected = min(first_seen),
+            by: {security_problem_type, vulnerable_component}
+| filter problem_count > 1
+| sort problem_count desc, avg_risk desc
+```
+
+### Correlate Security Problems with Recent Code Changes
+```dql
+fetch dt.security_problem
+| filter first_seen > now() - 7d
+| lookup [fetch dt.entity.service
+          | fields id, last_deployment_time, deployment_version],
+          sourceField: affected_entity, lookupField: id
+| filter timeframe(last_deployment_time, from: now() - 7d)
+| fields display_name, service_name, deployment_version, 
+         first_seen, last_deployment_time, risk_score
+| sort first_seen desc
+```
+
+### Identify Vulnerability Clusters
+```dql
+fetch dt.security_problem
+| filter status == "OPEN"
+| summarize cluster_size = count(),
+            total_risk = sum(risk_score),
+            services = collectDistinct(affected_entity),
+            by: {technology, security_problem_type, vulnerable_component}
+| filter cluster_size >= 3
+| sort total_risk desc
+```
+
+### Detect Repeated Vulnerability Patterns
+```dql
+fetch dt.security_problem
+| filter muted == false
+| summarize occurrences = count(),
+            teams_affected = countDistinct(management_zone),
+            by: {security_problem_type, vulnerable_component, component_version}
+| filter occurrences > 5
+| sort occurrences desc
+```
+
+### Find Vulnerabilities with Active Attacks
+```dql
+fetch dt.security_problem
+| filter attack_detected == true or exploitation_attempts > 0
+| fields display_name, affected_entity, risk_score, 
+         exploitation_attempts, last_attack_time, attack_source
+| lookup [fetch dt.entity.service
+          | fields id, service_name, management_zone],
+          sourceField: affected_entity, lookupField: id
+| sort exploitation_attempts desc
+```
+
+## 4. Advanced Davis AI Analytics
+
+### Security Trend Analysis with Anomaly Detection
+```dql
+fetch dt.security_problem
+| summarize new_vulnerabilities = count(),
+            by: {bin(timestamp, 1d), severity}
+| lookup [timeseries avg_baseline = avg(new_vulnerabilities),
+          from: now() - 30d, interval: 1d]
+| fields timestamp, new_vulnerabilities, avg_baseline,
+         deviation = (new_vulnerabilities - avg_baseline) / avg_baseline * 100
+| filter deviation > 50
+```
+
+### Prioritization Score Based on Multiple Factors
+```dql
+fetch dt.security_problem
+| filter status == "OPEN"
+| fields display_name, risk_score, exposure_level, 
+         affected_entities, exploitation_attempts,
+         priority_score = (risk_score * 10) + 
+                          (if(exposure_level == "PUBLIC_NETWORK", 50, 0)) +
+                          (arraySize(affected_entities) * 5) +
+                          (exploitation_attempts * 100)
+| sort priority_score desc
+| limit 20
+```
+
+### Security Posture Dashboard Query
+```dql
+fetch dt.security_problem
+| summarize total_problems = count(),
+            critical_count = countIf(severity == "CRITICAL"),
+            high_count = countIf(severity == "HIGH"),
+            with_attacks = countIf(attack_detected == true),
+            avg_risk = avg(risk_score),
+            services_affected = countDistinct(affected_entity),
+            by: {management_zone}
+| fields management_zone, total_problems, critical_count, high_count,
+         with_attacks, avg_risk, services_affected,
+         risk_density = total_problems / services_affected
+```
+
+### Time to Remediation Analysis
+```dql
+fetch dt.security_problem
+| filter status == "RESOLVED"
+| fields display_name, security_problem_type, severity,
+         first_seen, resolution_time,
+         time_to_fix = duration(first_seen, resolution_time)
+| summarize avg_resolution = avg(time_to_fix),
+            median_resolution = median(time_to_fix),
+            by: {security_problem_type, severity}
+| sort avg_resolution desc
+```
+
+### Vulnerability Recurrence Detection
+```dql
+fetch dt.security_problem
+| filter status == "RESOLVED"
+| lookup [fetch dt.security_problem
+          | filter status == "OPEN"],
+          sourceField: vulnerable_component, lookupField: vulnerable_component
+| filter isNotNull(lookup.display_name)
+| fields vulnerable_component, original_resolution = resolution_time,
+         recurrence = lookup.first_seen, affected_entity
+| summarize recurrence_count = count(), by: {vulnerable_component}
+```
+
+## Key Field References
+
+Common fields available in `dt.security_problem`:
+- `display_name` - Vulnerability description
+- `risk_score` - Numerical risk (0-10)
+- `severity` - CRITICAL, HIGH, MEDIUM, LOW
+- `security_problem_type` - Category/SRG type
+- `vulnerable_component` - Library or component name
+- `affected_entity` - Service/process affected
+- `exposure_level` - Network exposure level
+- `attack_detected` - Boolean for active exploitation
+- `status` - OPEN, RESOLVED, MUTED
+- `first_seen` - First detection timestamp
+- `root_cause_entity` - Root cause identification
+
+These queries leverage Davis AI's correlation engine, impact analysis, and intelligent grouping to provide actionable security insights.

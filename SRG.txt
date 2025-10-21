@@ -1,0 +1,162 @@
+# Dynatrace Security Research Groups (SRGs) - Detailed Explanation
+
+## What are SRGs?
+
+**Security Research Groups (SRGs)** in Dynatrace are predefined collections of security vulnerabilities grouped by common characteristics, attack vectors, or security standards. They help organizations prioritize and manage application security risks systematically.
+
+## Key Components
+
+### 1. **Purpose and Function**
+- **Risk Aggregation**: Group related vulnerabilities to see the bigger security picture
+- **Prioritization**: Focus remediation efforts on the most critical security issues
+- **Compliance Mapping**: Align vulnerabilities with security frameworks (OWASP, CWE, etc.)
+- **Trend Analysis**: Track security posture over time by vulnerability category
+
+### 2. **Common SRG Categories**
+
+**Injection Flaws**
+- SQL Injection
+- Command Injection
+- LDAP Injection
+- NoSQL Injection
+
+**Authentication & Authorization**
+- Broken authentication
+- Session management issues
+- Privilege escalation vulnerabilities
+
+**Sensitive Data Exposure**
+- Unencrypted data transmission
+- Inadequate cryptography
+- Data leakage
+
+**Security Misconfiguration**
+- Default credentials
+- Unnecessary services enabled
+- Missing security patches
+
+**Cross-Site Scripting (XSS)**
+- Reflected XSS
+- Stored XSS
+- DOM-based XSS
+
+**Insecure Dependencies**
+- Vulnerable third-party libraries
+- Outdated components
+- Known CVEs in dependencies
+
+## How SRGs Work in Dynatrace
+
+### Detection and Classification
+1. **Runtime Application Protection**: Dynatrace monitors application behavior in real-time
+2. **Vulnerability Detection**: Identifies security issues through code-level visibility
+3. **Automatic Grouping**: Assigns detected vulnerabilities to appropriate SRGs
+4. **Severity Scoring**: Provides risk scores (Critical, High, Medium, Low)
+
+### Visualization and Reporting
+- **Security Dashboard**: Shows SRG distribution across your environment
+- **Trend Charts**: Visualizes vulnerability growth or reduction over time
+- **Entity Relationships**: Links vulnerabilities to specific services, processes, and hosts
+- **Attack Surface Mapping**: Shows which applications are most exposed
+
+## Practical Use Cases
+
+### 1. **Vulnerability Management Workflow**
+```
+Detection ? SRG Classification ? Risk Assessment ? Prioritization ? Remediation ? Validation
+```
+
+### 2. **Compliance Reporting**
+- Map SRGs to compliance frameworks (PCI-DSS, HIPAA, SOC 2)
+- Generate reports showing security posture against standards
+- Track remediation progress for audit purposes
+
+### 3. **DevSecOps Integration**
+- Alert development teams when new vulnerabilities appear in their services
+- Block deployments with critical SRG violations
+- Track security metrics in CI/CD pipelines
+
+### 4. **Security Metrics**
+- Mean Time to Detect (MTTD) security issues
+- Mean Time to Resolve (MTTR) by SRG category
+- Vulnerability density per application
+- Security debt tracking
+
+## Working with SRGs
+
+### Querying SRGs in DQL
+```dql
+fetch dt.security_problem
+| filter security_problem_type == "INJECTION"
+| summarize count(), by: {affected_entity, severity}
+```
+
+### Filtering by Risk Level
+```dql
+fetch dt.security_problem
+| filter risk_score >= 7.0
+| summarize problems = count(), by: {security_problem_type}
+```
+
+### Tracking Remediation
+```dql
+fetch dt.security_problem
+| filter status == "RESOLVED"
+| summarize resolved_count = count(), by: {security_problem_type, resolution_date}
+```
+
+## Best Practices
+
+### 1. **Prioritization Strategy**
+- Focus on Critical and High severity SRGs first
+- Consider exploitability and business impact
+- Address vulnerabilities in internet-facing applications first
+
+### 2. **Regular Review Cycles**
+- Weekly reviews of new vulnerabilities
+- Monthly SRG trend analysis
+- Quarterly security posture assessments
+
+### 3. **Team Alignment**
+- Assign SRG ownership to specific teams
+- Establish SLAs for remediation by severity
+- Create runbooks for common SRG types
+
+### 4. **Integration Points**
+- Connect to ticketing systems (Jira, ServiceNow)
+- Feed data into SIEM platforms
+- Integrate with vulnerability scanners
+
+## Advanced Features
+
+### Davis AI Integration
+- **Automatic Root Cause Analysis**: Davis AI identifies why vulnerabilities exist
+- **Impact Assessment**: Predicts blast radius of security issues
+- **Smart Alerting**: Reduces noise by correlating related vulnerabilities
+
+### Attack Detection
+- Real-time monitoring of exploitation attempts
+- Links detected attacks to specific SRG categories
+- Provides attack chain visualization
+
+### Third-Party Risk Management
+- Identifies vulnerable dependencies
+- Tracks supply chain security risks
+- Monitors open-source component vulnerabilities
+
+## Key Benefits
+
+1. **Centralized Security Visibility**: Single pane of glass for application security
+2. **Context-Aware Prioritization**: Understands runtime behavior and actual risk
+3. **Automated Detection**: Continuous monitoring without manual scanning
+4. **Faster Remediation**: Clear categorization speeds up fix implementation
+5. **Compliance Alignment**: Maps to industry standards automatically
+
+## Limitations to Consider
+
+- Requires Dynatrace Application Security module
+- Effectiveness depends on instrumentation coverage
+- May require tuning to reduce false positives
+- Focuses on runtime vulnerabilities (complements but doesn't replace SAST/DAST)
+
+SRGs are a powerful feature for organizations looking to implement a data-driven, risk-based approach to application security management within their Dynatrace environment.

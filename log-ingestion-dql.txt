@@ -1,0 +1,47 @@
+Here's a DQL query for Dynatrace log ingestion with a filter for "failure":
+
+```dql
+fetch logs
+| filter contains(content, "failure")
+```
+
+For more specific filtering options, you can use variations like:
+
+**Case-insensitive search:**
+```dql
+fetch logs
+| filter matchesPhrase(content, "failure")
+```
+
+**Filter by specific log level AND failure content:**
+```dql
+fetch logs
+| filter loglevel == "ERROR" and contains(content, "failure")
+```
+
+**Filter with multiple failure-related terms:**
+```dql
+fetch logs
+| filter contains(content, "failure") or contains(content, "failed") or contains(content, "error")
+```
+
+**Filter with time range:**
+```dql
+fetch logs, from: now() - 1h
+| filter contains(content, "failure")
+```
+
+**Filter specific fields (if structured logs):**
+```dql
+fetch logs
+| filter status == "failure" or contains(message, "failure")
+```
+
+**With additional fields displayed:**
+```dql
+fetch logs
+| filter contains(content, "failure")
+| fields timestamp, loglevel, content, dt.entity.service
+```
+
+The `content` field contains the full log message text. You can adjust these queries based on your specific log structure and which fields contain the "failure" information you're looking for.
