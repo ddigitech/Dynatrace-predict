@@ -1,4 +1,4 @@
-# DQL Examples for Davis AI Security Integration
+
 
 Here are practical DQL queries for leveraging Davis AI's security analysis capabilities:
 
@@ -252,5 +252,6 @@ Common fields available in `dt.security_problem`:
 - `status` - OPEN, RESOLVED, MUTED
 - `first_seen` - First detection timestamp
 - `root_cause_entity` - Root cause identification
+
 
 These queries leverage Davis AI's correlation engine, impact analysis, and intelligent grouping to provide actionable security insights.
