@@ -1,4 +1,4 @@
-# Mouse Mover Script - Moves mouse every 15 seconds
+
 # Press Ctrl+C to stop the script
 
 Add-Type -AssemblyName System.Windows.Forms
@@ -36,4 +36,5 @@ catch {
 }
 finally {
     Write-Host "Total moves: $moveCount" -ForegroundColor Green
+
 }
