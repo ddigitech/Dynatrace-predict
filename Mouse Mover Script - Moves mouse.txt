@@ -1,0 +1,39 @@
+# Mouse Mover Script - Moves mouse every 15 seconds
+# Press Ctrl+C to stop the script
+
+Add-Type -AssemblyName System.Windows.Forms
+
+Write-Host "Mouse Mover Started - Press Ctrl+C to stop" -ForegroundColor Green
+Write-Host "Moving mouse every 15 seconds..." -ForegroundColor Cyan
+
+$moveCount = 0
+
+try {
+    while ($true) {
+        # Get current mouse position
+        $currentPos = [System.Windows.Forms.Cursor]::Position
+        
+        # Move mouse slightly (5 pixels right and down, then back)
+        $newX = $currentPos.X + 5
+        $newY = $currentPos.Y + 5
+        
+        [System.Windows.Forms.Cursor]::Position = New-Object System.Drawing.Point($newX, $newY)
+        Start-Sleep -Milliseconds 100
+        
+        # Move back to original position
+        [System.Windows.Forms.Cursor]::Position = $currentPos
+        
+        $moveCount++
+        $timestamp = Get-Date -Format "HH:mm:ss"
+        Write-Host "[$timestamp] Mouse moved (Count: $moveCount)" -ForegroundColor Yellow
+        
+        # Wait 15 seconds
+        Start-Sleep -Seconds 15
+    }
+}
+catch {
+    Write-Host "`nScript stopped" -ForegroundColor Red
+}
+finally {
+    Write-Host "Total moves: $moveCount" -ForegroundColor Green
+}
