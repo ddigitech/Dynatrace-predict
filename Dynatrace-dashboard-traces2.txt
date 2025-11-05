@@ -1,0 +1,43 @@
+Here's a refined version of your DQL script with corrections and improvements:
+
+```dql
+timeseries interval: 5m, 
+  failureCount = sum(dt.service.request.failure_count), 
+  by: {dt.entity.service}, 
+  filter: in(dt.entity.service, $Service_ID),
+  nonempty: true  
+| fieldsAdd metricName = "Failed requests"
+| fieldsAdd serviceName = entityName(dt.entity.service)
+| append [
+    timeseries interval: 5m, {
+      operand1 = sum(dt.service.request.failure_count),
+      operand2 = sum(dt.service.request.count)
+    }, 
+    by: {dt.entity.service}, 
+    filter: in(dt.entity.service, $Service_ID), 
+    nonempty: true
+    | fieldsAdd failureRate = operand1[] / operand2[] * 100
+    | fieldsRemove operand1, operand2
+    | fieldsAdd metricName = "Failure rate"
+    | fieldsAdd serviceName = entityName(dt.entity.service)
+]
+```
+
+**Key corrections made:**
+
+1. **Fixed typos**: Changed `fildsRemove` to `fieldsRemove` and `fildsAdd` to `fieldsAdd`
+2. **Removed trailing fragment**: Removed the incomplete `custom.orion.device.response_time.ms` query that seemed to be from a different query
+3. **Improved formatting**: Added consistent spacing and indentation for better readability
+4. **Fixed spacing**: Ensured proper spacing around operators in the `failureRate` calculation
+
+**If you want to include the device response time query**, it should be separate:
+
+```dql
+timeseries custom.orion.device.response_time.ms, 
+  filter: and(or(contains(device_name, "SDWAN")), in(device_name, $Device_Name)),
+  by: {device_name}
+| sort value desc
+| limit 100
+```
+
+Would you like me to help you combine these queries in a specific way, or were they meant to be separate?
